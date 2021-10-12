@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+		integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous" />
+
+	<link rel="stylesheet" href="style.css" />
+
+	<title>StudentListApp | VanilaJS</title>
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg navbar-dark bg-purple">
+		<a class="navbar-brand" href="#">Student Management MiniApp</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarText"
+			aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+			<span class="navbar-toggler-icon"></span>
+		</button>
+		<div class="collapse navbar-collapse" id="navbarText">
+			<ul class="navbar-nav mr-auto">
+				<li class="nav-item">
+					<a class="nav-link" href="index.html">Home</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" href="about.html">About</a>
+				</li>
+			</ul>
+		</div>
+	</nav>
+	<div class="container">
+		<h1 class="display-3 text-purple">Student Management</h1>
+		<h1 class="display-4">MiniApp</h1>
+		<hr />
+
+		<div class="row">
+			<div class="col-6">
+				<h3>Add Student</h3>
+				<button class="btn bg-purple" id="student-form-text" onclick="toggleForm()"> Show Form Add New
+					Student</button>
+				<form id="student-form" style="display: none">
+					<div class="form-group">
+						<label>STUDENT ID (NIM)</label>
+						<input type="text" class="form-control" id="form-nim" required />
+					</div>
+					<div class="form-group">
+						<label>Full Name</label>
+						<input type="text" class="form-control" id="form-fullname" required />
+					</div>
+					<div class="form-group">
+						<label>Gender</label>
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="gender" value="Male" checked />
+							<label class="form-check-label"> Male </label>
+						</div>
+						<div class="form-check">
+							<input class="form-check-input" type="radio" name="gender" value="Female" />
+							<label class="form-check-label"> Female </label>
+						</div>
+					</div>
+					<div class="form-group">
+						<label>Faculty</label>
+						<select class="form-control" id="add-faculty" onchange="getPOS()" required>
+							<option>-- SELECT FACULTY --</option>
+						</select>
+					</div>
+					<div class="form-group">
+						<label>Program of Study</label>
+						<select class="form-control" id="pos" required>
+							<option>-- SELECT PROGRAM OF STUDY --</option>
+						</select>
+					</div>
+					<button type="button" class="btn btn-block bg-purple" onclick="addNewStudent()">
+						Add Student
+					</button>
+				</form>
+			</div>
+			<div class="col-6">
+				<h3>Filter Students By</h3>
+				<p>Faculty</p>
+				<select class="form-control" id="filter-faculty">
+					<option>-- SELECT FACULTY --</option>
+				</select>
+				<button class="btn btn-block bg-purple my-3" onclick="filterFaculty()">
+					Show Students
+				</button>
+				<p>Program of Study</p>
+				<select class="form-control" id="filter-pos">
+					<option>-- SELECT PROGRAM OF STUDY --</option>
+				</select>
+				<button class="btn btn-block bg-purple my-3" onclick="filterPOS()">
+					Show Students
+				</button>
+			</div>
+		</div>
+		<hr />
+		<h1 class="display-4 text-center">OUR STUDENTS</h1>
+		<input type="text" class="form-control" placeholder="Search student by name.." id="fullname" />
+
+		<table class="table table-hover my-3">
+			<thead>
+				<tr>
+					<th scope="col">Student ID (NIM)</th>
+					<th scope="col">Full Name</th>
+					<th scope="col">Gender</th>
+					<th scope="col">Faculty</th>
+					<th scope="col">Program of Study</th>
+					<th scope="col">Action</th>
+				</tr>
+			</thead>
+			<tbody id="tabel-mahasiswa"></tbody>
+		</table>
+	</div>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+		crossorigin="anonymous"></script>
+	<script>
+
+		// data awal mahasiswa
+		let data = [
+			{
+				nim: 12345677,
+				fullname: "Deo Timothy Kabo",
+				gender: "Laki-laki",
+				faculty: "Fakultas Ilmu Komputer",
+				pos: "Informatika",
+			},
+			{
+				nim: 19324987,
+				fullname: "Fiona Poluakan",
+				gender: "Perempuan",
+				faculty: "Fakultas Ilmu Komputer",
+				pos: "Informatika",
+			},
+			{
+				nim: 187423984,
+				fullname: "Ryan Sidomulyo",
+				gender: "Laki-laki",
+				faculty: "Fakultas Ilmu Komputer",
+				pos: "Informatika",
+			},
+		];
+
+		// data awal faculty dan program of study
+		let faculty = [
+			{
+				name: "Pascasarjana",
+				pos: ["Magister Manajemen", "Magister Teologi"],
+			},
+			{
+				name: "Fakultas Filsafat",
+				pos: ["Ilmu Filsafat"],
+			},
+			{
+				name: "Fakultas Keguruan dan Ilmu Pendidikan",
+				pos: [
+					"Pendidikan Agama",
+					"Pendidikan Bahasa Inggris",
+					"Pendidikan Ekonomi",
+					"Pendidikan Luar Sekolah",
+				],
+			},
+			{
+				name: "Fakultas Ekonomi dan Bisnis",
+				pos: ["Akuntansi", "Manajemen"],
+			},
+			{
+				name: "Fakultas Pertanian",
+				pos: ["Agroteknologi"],
+			},
+			{
+				name: "Fakultas Ilmu Komputer",
+				pos: ["Informatika", "Sistem Informasi"],
+			},
+			{
+				name: "Fakultas Keperawatan",
+				pos: ["Profesi Ners", "Keperawatan"],
+			},
+			{
+				name: "Akademi Sekretari Manajemen Indonesia Klabat",
+				pos: ["Sekretari(D3)"],
+			},
+		];
+
+		// untuk hide dan show form add new students
+		function toggleForm() {
+			var x = document.getElementById("student-form");
+			var text = document.getElementById("student-form-text");
+			if (x.style.display === "none") {
+				x.style.display = "block";
+				text.innerHTML = "Hide Form Add New Student";
+			} else {
+				x.style.display = "none";
+				text.innerHTML = "Show Form Add New Student";
+			}
+		}
+
+		// menampilkan data mahasiswa
+		function showStudent() {
+			$("#tabel-mahasiswa").html("");
+			$.each(data, function (key, value) {
+				$("#tabel-mahasiswa").append(`
+      		<tr>
+      			<td>${value.nim}</td>
+      			<td>${value.fullname}</td>
+      			<td>${value.gender}</td>
+      			<td>${value.faculty}</td>
+      			<td>${value.pos}</td>
+      			<td><button type="button" class="btn btn-danger" onclick="deleteStudent(${key})">Hapus</button></td>
+      		</tr>
+      		`);
+			});
+		}
+		showStudent();
+
+		// tampilkan data awal faculty
+		faculty.forEach(function (value, index) {
+			$("#add-faculty").append(
+				`<option value="${value.name}">${value.name}</option>`
+			);
+			$("#filter-faculty").append(
+				`<option value="${value.name}">${value.name}</option>`
+			);
+			value.pos.forEach(function (val_pos) {
+				$("#filter-pos").append(
+					`<option value="${val_pos}">${val_pos}</option>`
+				);
+			});
+		});
+
+		// handle change faculty
+		function getPOS() {
+			selectedFaculty = $("#add-faculty").val();
+			faculty.forEach(function (value, index) {
+				if (value.name == selectedFaculty) {
+					$("#pos").html("");
+					$("#pos").append(`<option>-- SELECT PROGRAM OF STUDY --</option>`);
+					value.pos.forEach(function (val_pos) {
+						$("#pos").append(
+							`<option value="${val_pos}">${val_pos}</option>`
+						);
+					});
+				}
+			});
+		}
+
+		// handle add new students
+		function addNewStudent() {
+			nim = $("#form-nim").val();
+			fullname = $("#form-fullname").val();
+			gender = $("input[name=gender]:checked", "#student-form").val();
+			faculty = $("#add-faculty").val();
+			pos = $("#pos").val();
+
+			data.push({
+				nim: nim,
+				fullname: fullname,
+				gender: gender,
+				faculty: faculty,
+				pos: pos,
+			});
+
+			showStudent();
+
+			// reset form
+			nim = $("#form-nim").val("");
+			fullname = $("#form-fullname").val("");
+			faculty = $("#add-faculty").val("");
+			pos = $("#pos").val("");
+		}
+
+		// handle delete student
+		function deleteStudent(index) {
+			data.splice(index, 1);
+			showStudent();
+		}
+
+		function filterFaculty() {
+			$("#tabel-mahasiswa").html("");
+			let selectedFaculty = $("#filter-faculty").val();
+			$.each(data, function (key, value) {
+				if (value.faculty == selectedFaculty) {
+					$("#tabel-mahasiswa").append(
+						`
+      		<tr>
+      			<td>${value.nim}</td>
+      			<td>${value.fullname}</td>
+      			<td>${value.gender}</td>
+      			<td>${value.faculty}</td>
+      			<td>${value.pos}</td>
+      			<td><button type="button" class="btn btn-danger" onclick="deleteStudent(${key})">Hapus</button></td>
+      		</tr>
+      		`
+					);
+				}
+			});
+		}
+
+		function filterPOS() {
+			$("#tabel-mahasiswa").html("");
+			let selectedPOS = $("#filter-pos").val();
+			$.each(data, function (key, value) {
+				if (value.pos == selectedPOS) {
+					$("#tabel-mahasiswa").append(
+						`
+      		<tr>
+      			<td>${value.nim}</td>
+      			<td>${value.fullname}</td>
+      			<td>${value.gender}</td>
+      			<td>${value.faculty}</td>
+      			<td>${value.pos}</td>
+      			<td><button type="button" class="btn btn-danger" onclick="deleteStudent(${key})">Hapus</button></td>
+      		</tr>
+      		`
+					);
+				}
+			});
+		}
+
+		// Search
+		$("#fullname").keyup(function () {
+			// reset table
+			$("#tabel-mahasiswa").html("");
+
+			// menampung nilai yang di input di form search
+			var searchField = $("#fullname").val();
+			var expression = new RegExp(searchField, "i");
+
+			// menampilkan data yang di filter
+			$.each(data, function (key, value) {
+				if (value.fullname.search(expression) != -1) {
+					$("#tabel-mahasiswa").append(
+						`
+      		<tr>
+      			<td>${value.nim}</td>
+      			<td>${value.fullname}</td>
+      			<td>${value.gender}</td>
+      			<td>${value.faculty}</td>
+      			<td>${value.pos}</td>
+      			<td><button type="button" class="btn btn-danger" onclick="deleteStudent(${key})">Hapus</button></td>
+      		</tr>
+      		`
+					);
+				}
+			});
+		});
+	</script>
+</body>
+
+</html>
